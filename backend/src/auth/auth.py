@@ -5,9 +5,9 @@ from jose import jwt
 from urllib.request import urlopen
 
 
-AUTH0_DOMAIN = 'udacity-fsnd.auth0.com'
+AUTH0_DOMAIN = 'dev-krk7h65i.us.auth0.com'
 ALGORITHMS = ['RS256']
-API_AUDIENCE = 'dev'
+API_AUDIENCE = 'coffee'
 
 ## AuthError Exception
 '''
@@ -33,17 +33,17 @@ def get_token_auth_header():
                 'description':'Authorization header must be present.'
             },401)
     auth_header_parts = auth_header.split(' ')
-    if auth_header[0].lower() != 'bearer':
+    if auth_header_parts[0].lower() != 'bearer':
         raise AuthError({
                 'code':'invalid_authorization_header',
                 'description':'Authorization header must start with "Bearer".'
             },401)
-    if auth_header_parts.size() == 1:
+    if len(auth_header_parts) == 1:
         raise AuthError({
                 'code':'invalid_authorization_header',
                 'description':'Authorization header must have a token.'
             },401)
-    if auth_header_parts.size() > 2:
+    if len(auth_header_parts) > 2:
         raise AuthError({
                 'code':'invalid_authorization_header',
                 'description':'Authorization header should be a bearer token.'
@@ -136,7 +136,7 @@ def requires_auth(permission=''):
         def wrapper(*args, **kwargs):
             token = get_token_auth_header()
             payload = verify_decode_jwt(token)
-            check_permissions(permission, payload)
+            verify_permissions(permission, payload)
             return f(payload, *args, **kwargs)
 
         return wrapper
