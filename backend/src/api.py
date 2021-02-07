@@ -76,4 +76,18 @@ def update_drinks(jwtoken, drink_id):
     except:
         abort(422)
 
+'''
+api endpoint to delete drink
+'''
+@app.route("/drinks/<drink_id>", methods=['DELETE'])
+@requires_auth('delete:drinks')
+def delete_drinks(jwtoken, drink_id):
+    drink = Drink.query.filter(Drink.id == drink_id).one_or_none()
+    if drink is None:
+        abort(404)
+    try:
+        drink.delete()
+        return jsonify({"success": True, "delete": drink_id}),200
+    except:
+        abort(422)
 
