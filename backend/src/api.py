@@ -54,3 +54,26 @@ def create_drinks(jwtoken):
     except:
         abort(500)
 
+'''
+api endpoint to update drinks
+'''
+@app.route("/drinks/<drink_id>", methods=['PATCH'])
+@requires_auth('patch:drinks')
+def update_drinks(jwtoken, drink_id):
+    body = request.get_json()
+    input_title = body.get("title", None)
+    input_recipe = body.get("recipe", None)
+    drink = Drink.query.filter(Drink.id == drink_id).one_or_none()
+    if drink is None:
+        abort(404)
+    try:
+        if input_title:
+            drink.title = input_title
+        if input_recipe:
+            drink.recipe = json.dumps(input_recipe)
+        drink.update()
+        return jsonify({"success": True, "drink": [drink.long()]}),200
+    except:
+        abort(422)
+
+
