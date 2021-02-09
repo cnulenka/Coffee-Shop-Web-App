@@ -66,7 +66,7 @@ def verify_permissions(permission, payload):
         raise AuthError({
                 'code': 'unauthorized',
                 'description': 'Permission missing.'
-            }, 403)
+            }, 401)
 
     return True
 

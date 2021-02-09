@@ -11,11 +11,13 @@ app = Flask(__name__)
 setup_db(app)
 CORS(app)
 
-db_drop_and_create_all()
+#db_drop_and_create_all()
 
 ## ROUTES
 '''
-api endpoint to get all drinks
+    The GET /drinks endpoint is a public endpoint that returns
+    a list of drinks from the database in the short
+    format with a 200 status code
 '''
 @app.route("/drinks", methods=["GET"])
 def get_drinks():
@@ -26,18 +28,24 @@ def get_drinks():
 
 
 '''
-api endpoint to get all drinks in details
+    The GET /drinks-detail endpoint requires the 'get:drinks-detail' permission.
+    It returns a list of drinks from the database in the long
+    format with a 200 status code
 '''
 @app.route("/drinks-detail", methods=['GET'])
 @requires_auth(permission='get:drinks-detail')
-def get_drink_detail(jwtoken):
+def get_drinks_detail(jwtoken):
     drinks = Drink.query.all()
     long_format_drinks = [drink.long() for drink in drinks]
     return jsonify({"success": True, "drinks": long_format_drinks}),200
 
 
 '''
-api endpoint to create new drinks
+    The POST /drinks endpoint requires the 'post:drinks' permission.
+    It creates a new row in the drinks table with, input is expected
+    in long format. returns 422 status code if input data is missing,
+    returns the created drink with 200 status. returns 500 if failure
+    happens during DB update
 '''
 @app.route("/drinks", methods=['POST'])
 @requires_auth('post:drinks')
@@ -55,7 +63,13 @@ def create_drinks(jwtoken):
         abort(500)
 
 '''
-api endpoint to update drinks
+The PATCH /drinks/<int:drink_id> endpoint requires the 'patch:drinks'
+    permission.
+    drink ID is the expected input param. If the drink with input ID
+    can not be found it responds with a 404 error.
+    If the ID is found, the corresponding row for the ID is updated.
+    On a successful update, the endpoint returns a 200 code and an array
+    of drinks, or error 422 in case of DB update failure.
 '''
 @app.route("/drinks/<drink_id>", methods=['PATCH'])
 @requires_auth('patch:drinks')
@@ -72,12 +86,17 @@ def update_drinks(jwtoken, drink_id):
         if input_recipe:
             drink.recipe = json.dumps(input_recipe)
         drink.update()
-        return jsonify({"success": True, "drink": [drink.long()]}),200
+        return jsonify({"success": True, "drinks": [drink.long()]}),200
     except:
         abort(422)
 
 '''
-api endpoint to delete drink
+The DELETE /drinks/<id> endpoint requires the 'delete:drink' permission.
+    drink ID is the expected input param. If the drink with input ID
+    can not be found it responds with a 404 error.
+    If the ID is found then the corresponding row is deleted from the database.
+    On a successful deletion, the endpoint returns a 200 code and the drink that
+    was deleted or error 422 in case of DB update failure.
 '''
 @app.route("/drinks/<drink_id>", methods=['DELETE'])
 @requires_auth('delete:drinks')
@@ -92,6 +111,9 @@ def delete_drinks(jwtoken, drink_id):
         abort(422)
 
 ## Error Handling
+'''
+    Error handlers to pass message with the error codes
+'''
 
 @app.errorhandler(422)
 def unprocessable(error):
